@@ -1,6 +1,6 @@
 # 🪸 Coral Programming Language
 
-**Coral** is a lightweight, expressive, and embeddable programming language designed for learning, hacking, and rapid prototyping. It’s written in **Kotlin**, and features a clean, modular architecture with its own Lexer, Parser, AST, and Interpreter components.
+**Coral** is a lightweight, expressive, and embeddable programming language designed for learning, rapid prototyping and self-teaching purposes. It’s written in **Kotlin**, and features a clean, modular architecture with its own Lexer, Parser, AST, and Interpreter components.
 
 > 🌊 *Built for simplicity, clarity, and creativity.*
 
@@ -20,11 +20,15 @@
 ## 🔍 Example Code
 
 ```coral
-let add = fn(x, y) {
-  return x + y;
+let max = fn(x, y) {
+  if ( x > y) {
+    return x;
+  } else {
+    return y;
+  }
 };
 
-let result = add(2, 3);
+let result = max(2, 3);
 ```
 
 ## 📦 Getting Started
