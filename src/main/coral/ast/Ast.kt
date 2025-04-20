@@ -17,7 +17,7 @@ interface Expression: Node {
 }
 
 class Program (
-    val statements: MutableList<Statement>
+    val statements: MutableList<Statement> = mutableListOf(),
 ) : Node {
     override fun tokenLiteral(): String {
         return if (statements.isNotEmpty()) {

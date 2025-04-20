@@ -70,7 +70,7 @@ class Parser (
 
     //Main function
     fun parseProgram(): Program {
-        val program = Program(mutableListOf())
+        val program = Program()
 
         while (curToken.type != TokenType.EOF) {
             val stmt = parseStatement()
