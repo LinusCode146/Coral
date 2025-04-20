@@ -32,11 +32,20 @@ let result = add(2, 3);
 ### Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/coral.git
-cd coral
+git clone https://github.com/yourusername/coral.git](https://github.com/LinusCode146/Coral.git
 ```
 
 ## Run tests
 ```bash
 ./gradlew test
 ```
+
+### 🧭 Explore the code
+
+The Coral codebase is organized into the following key packages:
+
+- [`main.coral.lexer`](src/main/kotlin/main/coral/lexer) — Responsible for turning source code into a stream of tokens.
+- [`main.coral.parser`](src/main/kotlin/main/coral/parser) — Parses the tokens into an Abstract Syntax Tree (AST).
+- [`main.coral.ast`](src/main/kotlin/main/coral/ast) — Contains definitions for AST nodes representing Coral programs.
+- [`test`](src/test/kotlin) — Unit tests for the lexer and parser using JUnit 5.
+
