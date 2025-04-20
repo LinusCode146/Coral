@@ -32,7 +32,7 @@ let result = add(2, 3);
 ### Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/coral.git](https://github.com/LinusCode146/Coral.git
+git clone https://github.com/LinusCode146/Coral.git
 ```
 
 ## Run tests
