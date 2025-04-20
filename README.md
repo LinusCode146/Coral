@@ -25,3 +25,15 @@ let add = fn(x, y) {
 };
 
 let result = add(2, 3);
+
+## 📦 Getting Started
+
+### Clone the repo
+
+```bash
+git clone https://github.com/yourusername/coral.git
+cd coral
+
+## Run tests
+```bash
+./gradlew test
