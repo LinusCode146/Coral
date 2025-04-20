@@ -8,7 +8,7 @@ import java.util.Scanner
 class Repl {
     fun start() {
         val scanner = Scanner(System.`in`)
-        println("Zyra REPL - enter code. Type ':run' to evaluate, or ':exit' to quit.")
+        println("Coral REPL - enter code. Type ':run' to evaluate, or ':exit' to quit.")
 
         val codeBuffer = StringBuilder()
 
