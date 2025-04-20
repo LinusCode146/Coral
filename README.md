@@ -21,7 +21,7 @@
 
 ```coral
 let max = fn(x, y) {
-  if ( x > y) {
+  if ( x > y ) {
     return x;
   } else {
     return y;
