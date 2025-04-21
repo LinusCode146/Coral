@@ -1,7 +1,9 @@
 package main.coral.repl
 
+import main.coral.evaluator.NULL
 import main.coral.evaluator.eval
 import main.coral.lexer.Lexer
+import main.coral.`object`.Environment
 import main.coral.parser.Parser
 
 import java.util.Scanner
@@ -42,9 +44,10 @@ class Repl {
                         println("Error during parsing: ${e.message}")
                         null
                     }
+                    val environment = Environment()
+                    val evaluated = eval(program!!, environment)
 
-                    val evaluated = eval(program!!)
-                    if (evaluated != null) {
+                    if (evaluated != NULL) {
                         println(evaluated.inspect())
                     }
 
