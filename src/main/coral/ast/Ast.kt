@@ -51,7 +51,7 @@ class ExpressionStatement(
 
 class PrefixExpression(
     private val token: Token,
-    private val operator: String,
+    val operator: String,
 ): Expression {
     lateinit var right: Expression
 
@@ -63,8 +63,8 @@ class PrefixExpression(
 
 class InfixExpression(
     private val token: Token,
-    private val operator: String,
-    private val left: Expression
+    val operator: String,
+    val left: Expression
 ): Expression {
     lateinit var right: Expression
     override fun tokenLiteral(): String = token.literal
@@ -79,6 +79,8 @@ class IfExpression(
     lateinit var condition: Expression
     lateinit var consequence: BlockStatement
     lateinit var alternative:  BlockStatement
+
+    fun hasAlternative(): Boolean = ::alternative.isInitialized
     override fun tokenLiteral(): String = token.literal
     override fun expressionNode() {}
     override fun String(): String {
@@ -108,7 +110,7 @@ class CallExpression(
 
 class IntegerLiteral (
     private val token: Token,
-    @Suppress("unused") private val value: Int
+    @Suppress("unused") val value: Int
 ): Expression {
     override fun tokenLiteral(): String = token.literal
     override fun expressionNode() {}
@@ -123,7 +125,7 @@ class Identifier(private val token: Token, val value: String): Expression {
     override fun toString(): String = String()
 }
 
-class Bool (private val token: Token, @Suppress("unused") private val value: Boolean): Expression {
+class Bool (private val token: Token, @Suppress("unused") val value: Boolean): Expression {
     override fun tokenLiteral(): String = token.literal
     override fun expressionNode() {}
     override fun String(): String = token.literal

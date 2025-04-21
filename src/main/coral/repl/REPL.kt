@@ -1,5 +1,6 @@
 package main.coral.repl
 
+import main.coral.evaluator.eval
 import main.coral.lexer.Lexer
 import main.coral.parser.Parser
 
@@ -42,12 +43,17 @@ class Repl {
                         null
                     }
 
+                    val evaluated = eval(program!!)
+                    if (evaluated != null) {
+                        println(evaluated.inspect())
+                    }
+
                     if (parser.errors().isNotEmpty()) {
                         println("👎 Parsing Errors:")
                         parser.errors().forEach { println(" - $it") }
                     } else {
                         println("✅ Parsed AST Output:")
-                        println(program?.String() ?: "(empty)")
+                        println(program.String())
                     }
 
                     codeBuffer.clear()
