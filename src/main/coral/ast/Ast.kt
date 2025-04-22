@@ -132,6 +132,45 @@ class Bool (private val token: Token, @Suppress("unused") val value: Boolean): E
     override fun toString(): String = String()
 }
 
+class StringLiteral(private val token: Token, val value: String):  Expression {
+    override fun tokenLiteral(): String = token.literal
+    override fun expressionNode() {}
+    override fun String(): String {
+        return value
+    }
+    override fun toString(): String = String()
+}
+
+class ArrayLiteral(private val token: Token): Expression {
+    lateinit var elements: List<Expression>
+    override fun tokenLiteral(): String = token.literal
+    override fun expressionNode() {}
+    override fun String(): String {
+        val codeBuffer = StringBuilder()
+        for  (element in elements) {
+            codeBuffer.append(element.String())
+        }
+        return codeBuffer.toString()
+    }
+    override fun toString(): String = String()
+}
+
+class IndexExpression(private val token: Token): Expression {
+    lateinit var left: Expression
+    lateinit var index: Expression
+    override fun expressionNode() {}
+    override fun String(): String {
+        val codeBuffer = StringBuilder()
+        codeBuffer.append(left.String())
+        codeBuffer.append("[ ")
+        codeBuffer.append(index.String())
+        codeBuffer.append("]")
+        return codeBuffer.toString()
+    }
+    override fun tokenLiteral(): String = token.literal
+    override fun toString(): String = String()
+}
+
 class FunctionLiteral (
     private val token: Token,
 ): Expression {

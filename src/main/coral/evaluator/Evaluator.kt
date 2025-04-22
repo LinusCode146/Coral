@@ -11,9 +11,28 @@ val NULL = Null()
 fun eval(node: Node, env: Environment): Obj {
     return when (node) {
         is Program -> evalProgram(node, env)
+        is ArrayLiteral -> {
+            val elements = evalExpressions(node.elements, env)
+            if(elements.size == 1 && isError(elements.first())) {
+                return elements.first()
+            }
+            return ArrayList(elements)
+        }
+        is IndexExpression -> {
+            val left = eval(node.left, env)
+            if(isError(left)) {
+                return left
+            }
+            val index = eval(node.index, env)
+            if(isError(index)) {
+                return index
+            }
+            return evalIndexExpression(left, index)
+        }
         is ExpressionStatement -> eval(node.expression, env)
         is IntegerLiteral -> Integer(node.value)
         is Bool -> boolToBoolean(node.value)
+        is StringLiteral -> StringOBJ(node.value)
         is PrefixExpression -> {
             val right = eval(node.right, env)
             if(isError(right)) {return right}
@@ -79,10 +98,15 @@ fun evalProgram(program: Program, env: Environment): Obj {
 
 // Functions
 fun applyFunction(fn: Obj, args: MutableList<Obj>): Obj {
-    val function = fn as  Function
-    val extendedEnv = extendFunctionEnv(function, args)
-    val evaluated = eval(function.body, extendedEnv)
-    return unwrapReturnValue(evaluated)
+    return when (fn) {
+        is Builtin -> fn.fn(args.toTypedArray())
+        is Function -> {
+            val extendedEnv = extendFunctionEnv(fn, args)
+            val evaluated = eval(fn.body, extendedEnv)
+            unwrapReturnValue(evaluated)
+        }
+        else -> newError("unknown function call $fn")
+    }
 }
 fun extendFunctionEnv(fn: Function, args: List<Obj>): Environment {
     val env = newEnclosedEnvironment(fn.env)
@@ -135,6 +159,7 @@ fun evalPrefixExpression(operator: String, right: Obj): Obj {
 fun evalInfixExpression(operator: String, left: Obj, right: Obj): Obj {
     return when {
         left.type() == INTEGER_OBJ && right.type() == INTEGER_OBJ -> evalIntegerInfixExpression(operator, left, right)
+        left.type() == STRING_OBJ && right.type() == STRING_OBJ -> evalStringInfixExpression(operator, left, right)
         operator == "==" -> boolToBoolean(left == right)
         operator == "!=" -> boolToBoolean(left != right)
         left.type() != right.type() -> newError("missmatch ${left.type()} $operator ${right.type()}")
@@ -171,14 +196,42 @@ fun evalIntegerInfixExpression(operator: String, left: Obj, right: Obj): Obj {
         else -> newError("unknown operator $operator ${left.type()} $operator ${right.type()}")
     }
 }
+fun evalStringInfixExpression(operator: String, left: Obj, right: Obj): Obj {
+    if(operator != "+") {
+        return newError("unknown operator ${right.type()} $operator ${left.type()}")
+    }
+
+    val leftVal = (left as StringOBJ).value
+    val rightVal = (right as StringOBJ).value
+    return StringOBJ(leftVal + rightVal)
+}
+fun evalIndexExpression(left: Obj, index: Obj): Obj {
+    return when {
+        left.type() == ARRAY_OBJ && index.type() == INTEGER_OBJ -> evalArrayIndexExpression(left, index)
+        else -> newError("index operator not supported ${left.type()}")
+    }
+}
+
+fun evalArrayIndexExpression(array: Obj, index: Obj): Obj {
+    val arrayObject = array as ArrayList
+    val idx = (index as Integer).value
+    val max = arrayObject.elements.size - 1
+    if (idx < 0 || idx > max) {
+        return NULL
+    }
+    return arrayObject.elements[idx]
+}
+
 
 // Helpers / Statements / Identifiers
 fun evalIdentifier(node: Identifier, env: Environment): Obj {
     val (value, ok) = env.get(node.value)
-    if(!ok) {
-        return newError("Identifier not found: ${node.value}")
+    if (ok) {
+        return value
     }
-    return value
+    builtins[node.value]?.let { return it }
+
+    return newError("Identifier not found: ${node.value}")
 }
 fun isTruthy(obj: Obj ): Boolean {
     return when (obj) {

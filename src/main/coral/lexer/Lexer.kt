@@ -38,6 +38,10 @@ class Lexer(val input: String) {
         skipWhitespace()
 
         val token = when (char) {
+            '"' -> {
+                val literal = readString()
+                newToken(TokenType.STRING, literal)
+            }
             '=' -> {
                 if(peekChar() == '=') {
                     readChar()
@@ -58,6 +62,8 @@ class Lexer(val input: String) {
             '/' -> newToken(TokenType.DIV, char)
             '<' -> newToken(TokenType.LT, char)
             '>' -> newToken(TokenType.GT, char)
+            '[' -> newToken(TokenType.LBRACKET, char)
+            ']' -> newToken(TokenType.RBRACKET, char)
             '!' -> {
                 if(peekChar() == '=') {
                     readChar()
@@ -97,6 +103,16 @@ class Lexer(val input: String) {
         return token
     }
 
+    private fun readString(): String {
+        val currentPos = position + 1
+        while(true) {
+            readChar()
+            if(char == '"' || char.code == 0) {
+                break
+            }
+        }
+        return input.substring(currentPos, position)
+    }
     private fun readIdentifier(): String {
         val start = position
         while (char.isLetter() || char == '_') {

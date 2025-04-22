@@ -9,6 +9,7 @@ enum class TokenType(@Suppress("unused") val literal: String) {
     // Identifiers + literals
     IDENT("IDENT"),
     INT("INT"),
+    STRING("STRING"),
 
     // Operators
     ASSIGN("="),
@@ -29,6 +30,8 @@ enum class TokenType(@Suppress("unused") val literal: String) {
     RPAREN(")"),
     LBRACE("{"),
     RBRACE(")"),
+    LBRACKET("["),
+    RBRACKET("]"),
 
     // Keywords
     FUNCTION("FUNCTION"),

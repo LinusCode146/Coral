@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class LexerTest {
     @Test
     fun testTokensBasic() {
-        val lexer = Lexer("+=(){},;")
+        val lexer = Lexer("let five = ")
         lexer.reset()
 
         while (true) {

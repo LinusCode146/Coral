@@ -22,6 +22,7 @@ enum class PCD(val pcd: Int){
     PRODUCT(4),
     PREFIX(5),
     CALL(6),
+    INDEX(7),
 }
 val precedences = mapOf(
     TokenType.EQ to PCD.EQUALS.pcd,
@@ -33,6 +34,7 @@ val precedences = mapOf(
     TokenType.MUL to PCD.PRODUCT.pcd,
     TokenType.DIV to PCD.PRODUCT.pcd,
     TokenType.LPAREN to PCD.CALL.pcd,
+    TokenType.LBRACKET to PCD.INDEX.pcd,
 )
 
 
@@ -56,6 +58,8 @@ class Parser (
         registerPrefix(TokenType.LPAREN) { parseGroupedExpressions() }
         registerPrefix(TokenType.IF) { parseIfExpression() }
         registerPrefix(TokenType.FUNCTION) { parseFunctionLiteral() }
+        registerPrefix(TokenType.STRING) { parseStringLiteral() }
+        registerPrefix(TokenType.LBRACKET) { parseArrayLiteral() }
 
         registerInfix(TokenType.EQ) { parseInfixExpression() }
         registerInfix(TokenType.NEQ) { parseInfixExpression() }
@@ -66,6 +70,7 @@ class Parser (
         registerInfix(TokenType.MUL) { parseInfixExpression() }
         registerInfix(TokenType.DIV) { parseInfixExpression() }
         registerInfix(TokenType.LPAREN) { parseCallExpressionFromLeft() }
+        registerInfix(TokenType.LBRACKET) { parseIndexExpression() }
     }
 
     //Main function
@@ -190,14 +195,52 @@ class Parser (
     private fun parseCallExpression(function: Expression): Expression? {
         val expression = CallExpression(curToken)
         expression.function = function
-        expression.arguments = parseCallArguments() ?: return null
+        expression.arguments = parseExpressionList(TokenType.RPAREN) ?: return null
         return expression
     }
     private fun parseCallExpressionFromLeft(): Expression? {
         val function = currentLeft ?: return null
         return parseCallExpression(function)
     }
+    private fun parseExpressionList(end: TokenType): List<Expression>? {
+        val args = mutableListOf<Expression>()
 
+        if (peekTokenIs(end)) {
+            nextToken()
+            return args
+        }
+
+        nextToken()
+        args.add(parseExpression(PCD.LOWEST.pcd) ?: return null)
+
+        while (peekTokenIs(TokenType.COMMA)) {
+            nextToken()
+            nextToken()
+            args.add(parseExpression(PCD.LOWEST.pcd) ?: return null)
+        }
+
+        if (!expectPeek(end)) {
+            return null
+        }
+
+        return args
+    }
+
+    private fun parseIndexExpression(): Expression? {
+        val left = currentLeft ?: return null
+
+        val exp = IndexExpression(curToken)
+        exp.left = left
+
+        nextToken()
+        exp.index = parseExpression(PCD.LOWEST.pcd) ?: return null
+
+        if (!expectPeek(TokenType.RBRACKET)) {
+            return null
+        }
+
+        return exp
+    }
 
     // Statement parsing methods
     private fun parseStatement(): Statement? {
@@ -265,32 +308,6 @@ class Parser (
 
         return stmt
     }
-
-    // Smaller Break-Down Functions for readability
-    private fun parseCallArguments(): List<Expression>? {
-        val args = mutableListOf<Expression>()
-
-        if(peekTokenIs(TokenType.RPAREN)) {
-            nextToken()
-            return args
-        }
-
-        nextToken()
-        var cur = parseExpression(PCD.LOWEST.pcd) ?: return null
-        args.add(cur)
-
-        while (peekTokenIs(TokenType.COMMA)) {
-            nextToken()
-            nextToken()
-            cur = parseExpression(PCD.LOWEST.pcd) ?: return null
-            args.add(cur)
-        }
-        if(!expectPeek(TokenType.RPAREN)) {
-            return null
-        }
-
-        return args
-    }
     private fun parseBool(): Expression = Bool(curToken, curTokenIs(TokenType.TRUE))
     private fun parseIdentifier(): Identifier = Identifier(curToken, curToken.literal)
     private fun parseFunctionLiteral(): Expression? {
@@ -340,6 +357,13 @@ class Parser (
         }
 
         return identifiers
+    }
+    private fun parseStringLiteral(): Expression = StringLiteral(curToken, curToken.literal)
+    private fun parseArrayLiteral():  Expression? {
+        val array = ArrayLiteral(curToken)
+
+        array.elements = parseExpressionList(TokenType.RBRACKET) ?: return null
+        return array
     }
 
     // Registration functions
