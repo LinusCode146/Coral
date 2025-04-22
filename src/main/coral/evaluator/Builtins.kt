@@ -43,8 +43,19 @@ val builtins: Map<String, Builtin> = mapOf(
         val arr =  args[0] as ArrayList
         val length = arr.elements.size
         if (length > 0) {
-            return@Builtin ArrayList(arr.elements.drop(1))
+            return@Builtin ArrayList(arr.elements.drop(1).toMutableList())
         }
         return@Builtin NULL
+    }),
+    "push" to Builtin(fn = { args: Array<Obj> ->
+        if (args.size != 2) {
+            return@Builtin newError("wrong number of arguments. got=${args.size}, want=1")
+        }
+        if(args[0].type() != ARRAY_OBJ) {
+            return@Builtin newError("first() only support arguments of type array")
+        }
+        val arr = (args[0] as ArrayList)
+        arr.elements.add(args[1])
+        return@Builtin ArrayList(arr.elements)
     }),
 )

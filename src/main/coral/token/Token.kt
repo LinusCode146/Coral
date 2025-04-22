@@ -32,6 +32,7 @@ enum class TokenType(@Suppress("unused") val literal: String) {
     RBRACE(")"),
     LBRACKET("["),
     RBRACKET("]"),
+    COLON(":"),
 
     // Keywords
     FUNCTION("FUNCTION"),

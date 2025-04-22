@@ -155,6 +155,25 @@ class ArrayLiteral(private val token: Token): Expression {
     override fun toString(): String = String()
 }
 
+class HashLiteral(private val token: Token, val value: String): Expression {
+    private lateinit var pairs: MutableMap<Expression, Expression>
+
+    override fun tokenLiteral(): String = token.literal
+    override fun expressionNode() {}
+    override fun String(): String {
+        val codeBuffer = StringBuilder()
+        codeBuffer.appendLine("fn")
+        codeBuffer.appendLine("{")
+        for (parameter in pairs.keys) {
+            codeBuffer.appendLine("$parameter : ${pairs[parameter]}")
+        }
+        codeBuffer.appendLine("}")
+        return codeBuffer.toString()
+    }
+    override fun toString(): String = String()
+}
+
+
 class IndexExpression(private val token: Token): Expression {
     lateinit var left: Expression
     lateinit var index: Expression

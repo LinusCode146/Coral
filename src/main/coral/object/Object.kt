@@ -20,7 +20,7 @@ interface Obj {
     fun inspect(): String
 }
 
-class ArrayList(val elements: List<Obj>): Obj {
+class ArrayList(val elements: MutableList<Obj>): Obj {
     override fun type(): ObjectType {
         return ARRAY_OBJ
     }

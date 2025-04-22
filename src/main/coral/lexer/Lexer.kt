@@ -64,6 +64,7 @@ class Lexer(val input: String) {
             '>' -> newToken(TokenType.GT, char)
             '[' -> newToken(TokenType.LBRACKET, char)
             ']' -> newToken(TokenType.RBRACKET, char)
+            ':' -> newToken(TokenType.COLON, char)
             '!' -> {
                 if(peekChar() == '=') {
                     readChar()
