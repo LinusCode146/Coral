@@ -11,7 +11,7 @@ import java.util.Scanner
 class Repl {
     fun start() {
         val scanner = Scanner(System.`in`)
-        println("Seien Sie gegrüßt verehrter Nutzer dieser wunderbaren neuen Sprache!")
+        println("Welcome, user of this fairly wonderful language!")
         println("Coral REPL - enter code. Type ':run' to evaluate, or ':exit' to quit.")
 
         val codeBuffer = StringBuilder()

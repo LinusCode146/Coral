@@ -30,6 +30,7 @@ fun eval(node: Node, env: Environment): Obj {
             return evalIndexExpression(left, index)
         }
         is ExpressionStatement -> eval(node.expression, env)
+        is HashLiteral -> evalHashLiteral(node, env)
         is IntegerLiteral -> Integer(node.value)
         is Bool -> boolToBoolean(node.value)
         is StringLiteral -> StringOBJ(node.value)
@@ -93,6 +94,26 @@ fun evalProgram(program: Program, env: Environment): Obj {
     }
 
     return result
+}
+
+fun evalHashLiteral(node: HashLiteral, env: Environment): Obj {
+    val pairs = mutableMapOf<HashKey, HashPair>()
+
+    for ((keyNode, valNode) in node.pairs) {
+        val key = eval(keyNode, env)
+        if(isError(key)) {
+            return NULL
+        }
+        val hashKey = key as Hashable
+        val value = eval(valNode, env)
+        if(isError(value)) {
+            return NULL
+        }
+        val hashed = hashKey.HashKey()
+        pairs[hashed] = HashPair(key, value)
+    }
+
+    return Hash(pairs)
 }
 
 
@@ -162,7 +183,7 @@ fun evalInfixExpression(operator: String, left: Obj, right: Obj): Obj {
         left.type() == STRING_OBJ && right.type() == STRING_OBJ -> evalStringInfixExpression(operator, left, right)
         operator == "==" -> boolToBoolean(left == right)
         operator == "!=" -> boolToBoolean(left != right)
-        left.type() != right.type() -> newError("missmatch ${left.type()} $operator ${right.type()}")
+        left.type() != right.type() -> newError("mismatch ${left.type()} $operator ${right.type()}")
         else -> newError("unknown operator ${left.type()} $operator ${right.type()}")
     }
 }
@@ -208,8 +229,16 @@ fun evalStringInfixExpression(operator: String, left: Obj, right: Obj): Obj {
 fun evalIndexExpression(left: Obj, index: Obj): Obj {
     return when {
         left.type() == ARRAY_OBJ && index.type() == INTEGER_OBJ -> evalArrayIndexExpression(left, index)
+        left.type() == HASH_OBJ -> evalHashIndexExpression(left, index)
         else -> newError("index operator not supported ${left.type()}")
     }
+}
+
+fun evalHashIndexExpression(hash: Obj, index: Obj): Obj {
+    val hashObject = hash as Hash
+    val key = index as Hashable
+    val pair = hashObject.pairs[key.HashKey()]
+    return pair?.value ?: NULL
 }
 
 fun evalArrayIndexExpression(array: Obj, index: Obj): Obj {

@@ -14,11 +14,51 @@ const val FUNCTION_OBJ = "FUNCTION"
 const val STRING_OBJ = "STRING"
 const val BUILTIN_OBJ = "BUILTIN"
 const val ARRAY_OBJ = "ARRAY"
+const val HASH_OBJ = "HASH"
 
 interface Obj {
     fun type(): ObjectType
     fun inspect(): String
 }
+
+interface Hashable {
+    fun HashKey(): HashKey
+}
+
+data class HashPair(val key: Obj, val value: Obj)
+data class HashKey(private val type: String, private val value: Int)
+
+class Hash (val pairs: MutableMap<HashKey, HashPair>): Obj {
+    override fun type(): ObjectType = HASH_OBJ
+    override fun inspect(): String {
+        val codeBuffer = StringBuilder()
+        codeBuffer.appendLine("{")
+        for ((_, value) in pairs) {
+            codeBuffer.appendLine("${value.key.inspect()} : ${value.value.inspect()}")
+        }
+        codeBuffer.appendLine("}")
+        return codeBuffer.toString()
+    }
+}
+
+fun HashKey(b: Flag): HashKey {
+    val value: Int = if(b.value) {
+        1
+    }else{
+        2
+    }
+    return HashKey(b.type(), value)
+}
+
+fun HashKey(i: Integer): HashKey {
+    return HashKey(i.type(), i.value)
+}
+
+fun hashKey(value: StringOBJ): HashKey {
+    val hash = value.value.hashCode()
+    return HashKey(type = value.type(), value = hash.toLong().toInt())
+}
+
 
 class ArrayList(val elements: MutableList<Obj>): Obj {
     override fun type(): ObjectType {
@@ -48,7 +88,7 @@ class Integer(val value: Int): Obj {
     }
     override fun inspect(): String =  "$value"
 }
-class Flag(private val value: Boolean): Obj {
+class Flag(val value: Boolean): Obj {
     override fun type(): ObjectType {
         return BOOL_OBJ
     }
@@ -69,9 +109,15 @@ class ReturnValue(val value: Obj): Obj {
     override fun inspect(): String = value.inspect()
 }
 
-class StringOBJ(val value: String): Obj {
+class StringOBJ(val value: String): Obj, Hashable {
     override fun type(): ObjectType = STRING_OBJ
     override fun inspect(): String = value
+
+    override fun HashKey(): HashKey {
+        // Simple hash based on built-in hashCode
+        val hash = value.hashCode()
+        return HashKey(type = type(), value = hash.toLong().toInt())
+    }
 
 }
 

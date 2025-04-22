@@ -155,8 +155,8 @@ class ArrayLiteral(private val token: Token): Expression {
     override fun toString(): String = String()
 }
 
-class HashLiteral(private val token: Token, val value: String): Expression {
-    private lateinit var pairs: MutableMap<Expression, Expression>
+class HashLiteral(private val token: Token): Expression {
+    lateinit var pairs: MutableMap<Expression, Expression>
 
     override fun tokenLiteral(): String = token.literal
     override fun expressionNode() {}

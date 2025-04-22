@@ -58,4 +58,11 @@ val builtins: Map<String, Builtin> = mapOf(
         arr.elements.add(args[1])
         return@Builtin ArrayList(arr.elements)
     }),
+    "puts" to Builtin(fn = { args: Array<Obj> ->
+
+        for (el in args) {
+            println(el.inspect())
+        }
+        return@Builtin NULL
+    }),
 )

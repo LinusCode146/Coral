@@ -60,6 +60,7 @@ class Parser (
         registerPrefix(TokenType.FUNCTION) { parseFunctionLiteral() }
         registerPrefix(TokenType.STRING) { parseStringLiteral() }
         registerPrefix(TokenType.LBRACKET) { parseArrayLiteral() }
+        registerPrefix(TokenType.LBRACE) { parseHashLiteral() }
 
         registerInfix(TokenType.EQ) { parseInfixExpression() }
         registerInfix(TokenType.NEQ) { parseInfixExpression() }
@@ -358,6 +359,37 @@ class Parser (
 
         return identifiers
     }
+
+    private fun parseHashLiteral(): Expression? {
+        val hash = HashLiteral(curToken)
+        hash.pairs = mutableMapOf()
+
+        while (!peekTokenIs(TokenType.RBRACE)) {
+            nextToken()
+            val key = parseExpression(PCD.LOWEST.pcd) ?: return null
+
+            if (!expectPeek(TokenType.COLON)) {
+                return null
+            }
+
+            nextToken()
+            val value = parseExpression(PCD.LOWEST.pcd) ?: return null
+
+            hash.pairs[key] = value
+
+            // FIX: allow closing the hash or expect a comma
+            if (!peekTokenIs(TokenType.RBRACE) && !expectPeek(TokenType.COMMA)) {
+                return null
+            }
+        }
+
+        if (!expectPeek(TokenType.RBRACE)) {
+            return null
+        }
+
+        return hash
+    }
+
     private fun parseStringLiteral(): Expression = StringLiteral(curToken, curToken.literal)
     private fun parseArrayLiteral():  Expression? {
         val array = ArrayLiteral(curToken)
