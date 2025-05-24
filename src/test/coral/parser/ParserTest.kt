@@ -21,6 +21,13 @@ class ParserTest {
         val output = parseInput(input)
         assertEquals("let x =  5;", output)
     }
+    @Test
+    fun testChainExpression() {
+        val input = "x.length()"
+        val output = parseInput(input)
+        println(output)
+        assertEquals("Chain Expression: x.length()", output)
+    }
 
     @Test
     fun testReturnStatement() {

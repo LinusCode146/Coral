@@ -33,6 +33,7 @@ enum class TokenType(@Suppress("unused") val literal: String) {
     LBRACKET("["),
     RBRACKET("]"),
     COLON(":"),
+    DOT("."),
 
     // Keywords
     FUNCTION("FUNCTION"),

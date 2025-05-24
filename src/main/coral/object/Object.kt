@@ -73,6 +73,11 @@ class ArrayList(val elements: MutableList<Obj>): Obj {
         codeBuffer.append("]")
         return codeBuffer.toString()
     }
+
+    fun len(): Integer = Integer(elements.size)
+    fun add(element: Obj) {
+        elements.add(element)
+    }
 }
 
 class Builtin(@Suppress("unused")val fn: (Array<Obj>) -> Obj) : Obj {
@@ -118,7 +123,9 @@ class StringOBJ(val value: String): Obj, Hashable {
         val hash = value.hashCode()
         return HashKey(type = type(), value = hash.toLong().toInt())
     }
+    fun len(): Integer = Integer(value.length)
 
+    fun reverse(): StringOBJ = StringOBJ(value.reversed())
 }
 
 class Error(private val message: String): Obj {

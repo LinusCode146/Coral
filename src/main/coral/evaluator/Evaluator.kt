@@ -11,6 +11,11 @@ val NULL = Null()
 fun eval(node: Node, env: Environment): Obj {
     return when (node) {
         is Program -> evalProgram(node, env)
+        is ChainExpression -> {
+            val leftExp = eval(node.left, env)
+            if (isError(leftExp)) return leftExp
+            evalChainedExpression(leftExp, node.right, env)
+        }
         is ArrayLiteral -> {
             val elements = evalExpressions(node.elements, env)
             if(elements.size == 1 && isError(elements.first())) {
@@ -129,6 +134,7 @@ fun applyFunction(fn: Obj, args: MutableList<Obj>): Obj {
         else -> newError("unknown function call $fn")
     }
 }
+
 fun extendFunctionEnv(fn: Function, args: List<Obj>): Environment {
     val env = newEnclosedEnvironment(fn.env)
     fn.parameters.forEachIndexed { index, param ->
@@ -240,6 +246,64 @@ fun evalHashIndexExpression(hash: Obj, index: Obj): Obj {
     val pair = hashObject.pairs[key.HashKey()]
     return pair?.value ?: NULL
 }
+
+fun evalChainedExpression(obj: Obj, right: Expression, env: Environment): Obj {
+    return when (right) {
+        is CallExpression -> {
+            val args = evalExpressions(right.arguments, env)
+            if (args.size == 1 && isError(args[0])) return args[0]
+            evalChainedFunction(obj, right.function, args)
+        }
+        is IndexExpression -> {
+            val index = eval(right.index, env)
+            if (isError(index)) return index
+            evalIndexExpression(obj, index)
+        }
+        else -> newError("Invalid chain target: ${right::class.simpleName}")
+    }
+}
+fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList<Obj>): Obj {
+    if (methodExpr !is Identifier) {
+        return newError("Invalid method call: expected identifier")
+    }
+
+    val methodName = methodExpr.value
+
+    return when (receiver) {
+        is ArrayList -> {
+            when (methodName) {
+                "len" -> {
+                    if (args.isNotEmpty()) return newError("len() expects no arguments")
+                    receiver.len()
+                }
+                "add" -> {
+                    if (args.size != 1) return newError("add() expects one argument")
+                    receiver.add(args[0])
+                    NULL
+                }
+                else -> newError("Unknown method '$methodName' for ArrayList")
+            }
+        }
+
+        // Example for StringOBJ
+        is StringOBJ -> {
+            when (methodName) {
+                "len" -> {
+                    if (args.isNotEmpty()) return newError("len() expects no arguments")
+                    receiver.len()
+                }
+                "reverse" -> {
+                    if(args.isNotEmpty()) return newError("reverse() expects no arguments")
+                    receiver.reverse()
+                }
+                else -> newError("Unknown method '$methodName' for String")
+            }
+        }
+
+        else -> newError("Type '${receiver.type()}' does not support method '$methodName'")
+    }
+}
+
 
 fun evalArrayIndexExpression(array: Obj, index: Obj): Obj {
     val arrayObject = array as ArrayList

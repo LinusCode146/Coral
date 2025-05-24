@@ -108,6 +108,18 @@ class CallExpression(
     override fun toString(): String = String()
 }
 
+class ChainExpression(private val token: Token): Expression {
+    lateinit var left: Expression
+    lateinit var right: Expression
+
+    override fun tokenLiteral(): String = token.literal
+    override fun expressionNode() {}
+    override fun String(): String {
+        return "Chain Expression: ${left.String()}.${right.String()}"
+    }
+    override fun toString(): String = String()
+}
+
 class IntegerLiteral (
     private val token: Token,
     @Suppress("unused") val value: Int

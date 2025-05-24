@@ -25,6 +25,9 @@ class Repl {
                     println("Goodbye!")
                     break
                 }
+                ":redo" -> {
+                    codeBuffer.clear()
+                }
 
                 ":run" -> {
                     val input = codeBuffer.toString()
@@ -54,14 +57,8 @@ class Repl {
                     if (parser.errors().isNotEmpty()) {
                         println("👎 Parsing Errors:")
                         parser.errors().forEach { println(" - $it") }
-                    } else {
-                        println("✅ Parsed AST Output:")
-                        println(program.String())
                     }
-
-                    codeBuffer.clear()
                 }
-
                 else -> {
                     codeBuffer.appendLine(line)
                 }

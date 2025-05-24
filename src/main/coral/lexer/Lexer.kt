@@ -51,6 +51,7 @@ class Lexer(val input: String) {
                 }
             }
             ';' -> newToken(TokenType.SEMICOLON, char)
+            '.' -> newToken(TokenType.DOT, char)
             '(' -> newToken(TokenType.LPAREN, char)
             ')' -> newToken(TokenType.RPAREN, char)
             ',' -> newToken(TokenType.COMMA, char)

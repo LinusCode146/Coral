@@ -35,6 +35,7 @@ val precedences = mapOf(
     TokenType.DIV to PCD.PRODUCT.pcd,
     TokenType.LPAREN to PCD.CALL.pcd,
     TokenType.LBRACKET to PCD.INDEX.pcd,
+    TokenType.DOT to PCD.CALL.pcd + 1
 )
 
 
@@ -72,6 +73,7 @@ class Parser (
         registerInfix(TokenType.DIV) { parseInfixExpression() }
         registerInfix(TokenType.LPAREN) { parseCallExpressionFromLeft() }
         registerInfix(TokenType.LBRACKET) { parseIndexExpression() }
+        registerInfix(TokenType.DOT) { parseChainExpressionFromLeft() }
     }
 
     //Main function
@@ -85,7 +87,6 @@ class Parser (
             }
             nextToken()
         }
-
         return program
     }
 
@@ -203,6 +204,30 @@ class Parser (
         val function = currentLeft ?: return null
         return parseCallExpression(function)
     }
+    private fun parseChainExpressionFromLeft(): Expression? {
+        val exp = currentLeft ?: return null
+        val dotToken = curToken
+        return parseChainExpression(exp, dotToken)
+    }
+
+    private fun parseChainExpression(left: Expression, dotToken: Token): Expression? {
+        nextToken() // Advance to IDENT (e.g., `length`)
+
+        val property = parseIdentifier() // Ensure it's parsed
+        var right: Expression = property
+
+        // Optional: support method call directly after dot
+        if (peekTokenIs(TokenType.LPAREN)) {
+            nextToken() // move to LPAREN
+            right = parseCallExpression(property) ?: return null
+        }
+
+        return ChainExpression(dotToken).also {
+            it.left = left
+            it.right = right
+        }
+    }
+
     private fun parseExpressionList(end: TokenType): List<Expression>? {
         val args = mutableListOf<Expression>()
 
