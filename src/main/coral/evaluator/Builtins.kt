@@ -58,11 +58,25 @@ val builtins: Map<String, Builtin> = mapOf(
         arr.elements.add(args[1])
         return@Builtin ArrayList(arr.elements)
     }),
-    "puts" to Builtin(fn = { args: Array<Obj> ->
+    "log" to Builtin(fn = { args: Array<Obj> ->
 
         for (el in args) {
             println(el.inspect())
         }
         return@Builtin NULL
+    }),
+    "isEven" to Builtin(fn = { args: Array<Obj> ->
+        if (args.size != 1 || args[0] !is Integer) {
+            return@Builtin newError("Invalid argument to isEven")
+        }
+        val value = (args[0] as Integer).value
+        boolToBoolean(value % 2 == 0)
+    }),
+    "isOdd" to Builtin(fn = { args: Array<Obj> ->
+        if (args.size != 1 || args[0] !is Integer) {
+            return@Builtin newError("Invalid argument to isEven")
+        }
+        val value = (args[0] as Integer).value
+        boolToBoolean(value % 2 != 0)
     }),
 )

@@ -2,6 +2,9 @@ package main.coral.`object`
 
 import main.coral.ast.BlockStatement
 import main.coral.ast.Identifier
+import main.coral.evaluator.NULL
+import main.coral.evaluator.boolToBoolean
+
 typealias ObjectType = String
 
 // Types
@@ -28,8 +31,9 @@ interface Hashable {
 data class HashPair(val key: Obj, val value: Obj)
 data class HashKey(private val type: String, private val value: Int)
 
-class Hash (val pairs: MutableMap<HashKey, HashPair>): Obj {
+class Hash(val pairs: MutableMap<HashKey, HashPair>) : Obj {
     override fun type(): ObjectType = HASH_OBJ
+
     override fun inspect(): String {
         val codeBuffer = StringBuilder()
         codeBuffer.appendLine("{")
@@ -39,7 +43,69 @@ class Hash (val pairs: MutableMap<HashKey, HashPair>): Obj {
         codeBuffer.appendLine("}")
         return codeBuffer.toString()
     }
+
+    // Check if a key exists in the hash
+    fun containsKey(key: Obj): Obj {
+        if (key !is Hashable) return boolToBoolean(false)
+        return boolToBoolean( pairs.containsKey(key.HashKey()))
+    }
+
+    fun add(key: Obj, value: Obj): Obj {
+        if (key !is Hashable) {
+            return Error("Unhashable type: ${key.type()}")
+        }
+        if(key in keys().elements) return Error("Hash can only contain unique keys, key already exists.")
+        val hashKey = key.HashKey()
+        pairs[hashKey] = HashPair(key, value)
+        return value
+    }
+
+    // Remove a key-value pair by key
+    fun remove(key: Obj): Obj {
+        if (key !is Hashable) return Error("Unhashable type: ${key.type()}")
+        val hashKey = key.HashKey()
+        val removed = pairs.remove(hashKey)
+        return removed?.value ?: Null()
+    }
+
+    // Return list of keys
+    fun keys(): ArrayList {
+        val result = mutableListOf<Obj>()
+        for ((_, pair) in pairs) {
+            result.add(pair.key)
+        }
+        return ArrayList(result)
+    }
+
+    // Return list of values
+    fun values(): ArrayList {
+        val result = mutableListOf<Obj>()
+        for ((_, pair) in pairs) {
+            result.add(pair.value)
+        }
+        return ArrayList(result)
+    }
+
+    // Clear all entries
+    fun clear() {
+        pairs.clear()
+    }
+
+    // Return the number of elements in the hash
+    fun size(): Integer {
+        return Integer(pairs.size)
+    }
+
+    // Check if the hash is empty
+    fun isEmpty(): Flag {
+        return boolToBoolean(pairs.isEmpty())
+    }
+    // Check if the hash is empty
+    fun isNotEmpty(): Flag {
+        return boolToBoolean(!pairs.isEmpty())
+    }
 }
+
 
 fun HashKey(b: Flag): HashKey {
     val value: Int = if(b.value) {
@@ -75,9 +141,113 @@ class ArrayList(val elements: MutableList<Obj>): Obj {
     }
 
     fun len(): Integer = Integer(elements.size)
-    fun add(element: Obj) {
+
+    fun append(element: Obj) {
         elements.add(element)
     }
+
+    fun reverse() {
+        elements.reverse()
+    }
+
+    fun toReversed(): ArrayList {
+        val reversedElements = elements.asReversed().toMutableList()
+        return ArrayList(reversedElements)
+    }
+
+    fun filter(predicate: Obj): Obj {
+        if (predicate !is Function && predicate !is Builtin) {
+            return Error("Argument to 'filter' must be a function")
+        }
+
+        val resultElements = mutableListOf<Obj>()
+
+        for (element in elements) {
+            val args = listOf(element)
+            val result = when (predicate) {
+                is Builtin -> predicate.fn(args.toTypedArray())
+                is Function -> {
+                    val extendedEnv = newEnclosedEnvironment(predicate.env)
+                    predicate.parameters.forEachIndexed { index, param ->
+                        extendedEnv.set(param.value, args[index])
+                    }
+                    val evaluated = main.coral.evaluator.eval(predicate.body, extendedEnv)
+                    main.coral.evaluator.unwrapReturnValue(evaluated)
+                }
+                else -> Null()
+            }
+
+            if (main.coral.evaluator.isError(result)) return result
+            if (main.coral.evaluator.isTruthy(result)) {
+                resultElements.add(element)
+            }
+        }
+
+        return ArrayList(resultElements)
+    }
+
+    fun map(transform: Obj): Obj {
+        if (transform !is Function && transform !is Builtin) {
+            return Error("Argument to 'map' must be a function")
+        }
+
+        val resultElements = mutableListOf<Obj>()
+
+        for (element in elements) {
+            val args = listOf(element)
+            val result = when (transform) {
+                is Builtin -> transform.fn(args.toTypedArray())
+                is Function -> {
+                    val extendedEnv = newEnclosedEnvironment(transform.env)
+                    transform.parameters.forEachIndexed { index, param ->
+                        extendedEnv.set(param.value, args[index])
+                    }
+                    val evaluated = main.coral.evaluator.eval(transform.body, extendedEnv)
+                    main.coral.evaluator.unwrapReturnValue(evaluated)
+                }
+                else -> Null()
+            }
+
+            if (main.coral.evaluator.isError(result)) return result
+            resultElements.add(result)
+        }
+
+        return ArrayList(resultElements)
+    }
+
+    fun reduce(reducer: Obj, initial: Obj): Obj {
+        if (reducer !is Function && reducer !is Builtin) {
+            return Error("Argument to 'reduce' must be a function")
+        }
+
+        var accumulator = initial
+
+        for (element in elements) {
+            val args = listOf(accumulator, element)
+            val result = when (reducer) {
+                is Builtin -> reducer.fn(args.toTypedArray())
+                is Function -> {
+                    val extendedEnv = newEnclosedEnvironment(reducer.env)
+                    reducer.parameters.forEachIndexed { index, param ->
+                        extendedEnv.set(param.value, args[index])
+                    }
+                    val evaluated = main.coral.evaluator.eval(reducer.body, extendedEnv)
+                    main.coral.evaluator.unwrapReturnValue(evaluated)
+                }
+                else -> Null()
+            }
+
+            if (main.coral.evaluator.isError(result)) return result
+            accumulator = result
+        }
+
+        return accumulator
+    }
+
+    fun isEmpty(): Obj = boolToBoolean(elements.isEmpty())
+
+    fun isNotEmpty(): Obj = boolToBoolean(!elements.isEmpty())
+
 }
 
 class Builtin(@Suppress("unused")val fn: (Array<Obj>) -> Obj) : Obj {
@@ -125,7 +295,7 @@ class StringOBJ(val value: String): Obj, Hashable {
     }
     fun len(): Integer = Integer(value.length)
 
-    fun reverse(): StringOBJ = StringOBJ(value.reversed())
+    fun reversed(): StringOBJ = StringOBJ(value.reversed())
 }
 
 class Error(private val message: String): Obj {

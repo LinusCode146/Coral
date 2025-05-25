@@ -1,6 +1,5 @@
 package main.coral.repl
 
-import main.coral.evaluator.NULL
 import main.coral.evaluator.eval
 import main.coral.lexer.Lexer
 import main.coral.`object`.Environment
@@ -48,11 +47,7 @@ class Repl {
                         null
                     }
                     val environment = Environment()
-                    val evaluated = eval(program!!, environment)
-
-                    if (evaluated != NULL) {
-                        println(evaluated.inspect())
-                    }
+                    eval(program!!, environment)
 
                     if (parser.errors().isNotEmpty()) {
                         println("👎 Parsing Errors:")

@@ -270,15 +270,74 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
     val methodName = methodExpr.value
 
     return when (receiver) {
+        is Hash -> {
+            when (methodName) {
+                "containsKey" -> {
+                    if(args.size != 1) return newError("containsKey expects one argument")
+                    receiver.containsKey(args[0])
+                }
+                "remove" -> {
+                    if(args.size != 1) return newError("remove expects one argument")
+                    receiver.remove(args[0])
+                }
+                "add" -> {
+                    if(args.size != 2) return newError("add expects two argument")
+                    receiver.add(args[0], args[1])
+                }
+                "keys" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.keys()
+                }
+                "values" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.values()
+                }
+                "clear" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.clear()
+                }
+                "len" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.size()
+                }
+                "isEmpty" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.isEmpty()
+                }
+                "isNotEmpty" -> {
+                    if(args.isNotEmpty()) return newError("keys expects no arguments")
+                    receiver.isNotEmpty()
+                }
+
+                else -> newError("Unknown method '$methodName' for Hash")
+            }
+        }
         is ArrayList -> {
             when (methodName) {
                 "len" -> {
                     if (args.isNotEmpty()) return newError("len() expects no arguments")
                     receiver.len()
                 }
-                "add" -> {
+                "append" -> {
                     if (args.size != 1) return newError("add() expects one argument")
-                    receiver.add(args[0])
+                    receiver.append(args[0])
+                    NULL
+                }
+                "filter" -> {
+                    if (args.size != 1) return newError("filter() expects one argument!")
+                    receiver.filter(args[0])
+                }
+                "map" -> {
+                    if (args.size != 1) return newError("map() expects one argument!")
+                    receiver.map(args[0])
+                }
+                "reduce" -> {
+                    if (args.size != 2) return newError("reduce() expects one argument")
+                    receiver.reduce(args[0], args[1])
+                }
+                "reverse" -> {
+                    if(args.isNotEmpty()) return newError("reversed() expects one argument")
+                    receiver.reverse()
                     NULL
                 }
                 else -> newError("Unknown method '$methodName' for ArrayList")
@@ -292,16 +351,16 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
                     if (args.isNotEmpty()) return newError("len() expects no arguments")
                     receiver.len()
                 }
-                "reverse" -> {
+                "reversed" -> {
                     if(args.isNotEmpty()) return newError("reverse() expects no arguments")
-                    receiver.reverse()
+                    receiver.reversed()
                 }
                 else -> newError("Unknown method '$methodName' for String")
             }
         }
 
         else -> newError("Type '${receiver.type()}' does not support method '$methodName'")
-    }
+    } as Obj
 }
 
 
