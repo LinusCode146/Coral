@@ -314,6 +314,10 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
         }
         is ArrayList -> {
             when (methodName) {
+                "pop" -> {
+                    if (args.isNotEmpty()) return newError("len() expects no arguments")
+                    receiver.pop()
+                }
                 "len" -> {
                     if (args.isNotEmpty()) return newError("len() expects no arguments")
                     receiver.len()
@@ -338,6 +342,11 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
                 "reverse" -> {
                     if(args.isNotEmpty()) return newError("reversed() expects one argument")
                     receiver.reverse()
+                    NULL
+                }
+                "extend" -> {
+                    if(args.size != 1) return newError("extend() expects one argument")
+                    receiver.extend(args[0] as ArrayList)
                     NULL
                 }
                 else -> newError("Unknown method '$methodName' for ArrayList")

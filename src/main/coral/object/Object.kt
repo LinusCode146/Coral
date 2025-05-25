@@ -142,6 +142,10 @@ class ArrayList(val elements: MutableList<Obj>): Obj {
 
     fun len(): Integer = Integer(elements.size)
 
+    fun extend(other: ArrayList) {
+        elements.addAll(other.elements)
+    }
+
     fun append(element: Obj) {
         elements.add(element)
     }
@@ -153,6 +157,12 @@ class ArrayList(val elements: MutableList<Obj>): Obj {
     fun toReversed(): ArrayList {
         val reversedElements = elements.asReversed().toMutableList()
         return ArrayList(reversedElements)
+    }
+
+    fun pop(): Obj {
+        val el =  elements[elements.size - 1]
+        elements.removeAt(elements.size - 1)
+        return el
     }
 
     fun filter(predicate: Obj): Obj {
