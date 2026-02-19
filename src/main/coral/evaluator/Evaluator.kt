@@ -315,8 +315,13 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
         is ArrayList -> {
             when (methodName) {
                 "pop" -> {
-                    if (args.isNotEmpty()) return newError("len() expects no arguments")
-                    receiver.pop()
+                    if (args.isEmpty() ){
+                        receiver.pop()
+                    }else if (args.size == 1) {
+                        receiver.pop(args[0] as Integer)
+                    } else {
+                        return Error("array expects one argument")
+                    }
                 }
                 "len" -> {
                     if (args.isNotEmpty()) return newError("len() expects no arguments")
@@ -335,6 +340,11 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
                     if (args.size != 1) return newError("map() expects one argument!")
                     receiver.map(args[0])
                 }
+                "remove" -> {
+                    if (args.size != 1) return newError("remove() expects one argument")
+                    receiver.remove(args[0])
+                    NULL
+                }
                 "reduce" -> {
                     if (args.size != 2) return newError("reduce() expects one argument")
                     receiver.reduce(args[0], args[1])
@@ -344,16 +354,23 @@ fun evalChainedFunction(receiver: Obj, methodExpr: Expression, args: MutableList
                     receiver.reverse()
                     NULL
                 }
-                "extend" -> {
+                "concat" -> {
                     if(args.size != 1) return newError("extend() expects one argument")
                     receiver.extend(args[0] as ArrayList)
                     NULL
+                }
+                "max" -> {
+                    if (args.isNotEmpty()) return newError("max() expects one argument")
+                    receiver.max()
+                }
+                "min" -> {
+                    if (args.isNotEmpty()) return newError("max() expects one argument")
+                    receiver.min()
                 }
                 else -> newError("Unknown method '$methodName' for ArrayList")
             }
         }
 
-        // Example for StringOBJ
         is StringOBJ -> {
             when (methodName) {
                 "len" -> {

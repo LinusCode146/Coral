@@ -159,10 +159,48 @@ class ArrayList(val elements: MutableList<Obj>): Obj {
         return ArrayList(reversedElements)
     }
 
-    fun pop(): Obj {
-        val el =  elements[elements.size - 1]
-        elements.removeAt(elements.size - 1)
+    fun pop(idx: Integer = Integer(elements.size - 1)): Obj {
+        val el =  elements[idx.value]
+        elements.removeAt(idx.value)
         return el
+    }
+
+    fun remove(el: Obj) {
+        elements.remove(el)
+    }
+
+    fun min(): Obj {
+        if (elements.isEmpty()) return Null()
+
+        var minElement: Integer? = null
+
+        for (element in elements) {
+            if (element !is Integer) {
+                return Error("Array contains non-integer element: ${element.type()}")
+            }
+            if (minElement == null || element.value < minElement.value) {
+                minElement = element
+            }
+        }
+
+        return minElement ?: Null()
+    }
+
+    fun max(): Obj {
+        if (elements.isEmpty()) return Null()
+
+        var maxElement: Integer? = null
+
+        for (element in elements) {
+            if (element !is Integer) {
+                return Error("Array contains non-integer element: ${element.type()}")
+            }
+            if(maxElement == null || element.value > maxElement.value) {
+                maxElement = element
+            }
+        }
+
+        return maxElement ?: Null()
     }
 
     fun filter(predicate: Obj): Obj {
@@ -268,16 +306,29 @@ class Builtin(@Suppress("unused")val fn: (Array<Obj>) -> Obj) : Obj {
 }
 
 class Integer(val value: Int): Obj {
-    override fun type(): ObjectType {
-        return INTEGER_OBJ
+    override fun type(): ObjectType = INTEGER_OBJ
+    override fun inspect(): String = "$value"
+
+    override fun equals(other: Any?): Boolean {
+        return other is Integer && other.value == this.value
     }
-    override fun inspect(): String =  "$value"
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
 }
+
 class Flag(val value: Boolean): Obj {
-    override fun type(): ObjectType {
-        return BOOL_OBJ
+    override fun type(): ObjectType = BOOL_OBJ
+    override fun inspect(): String = "$value"
+
+    override fun equals(other: Any?): Boolean {
+        return other is Flag && other.value == this.value
     }
-    override fun inspect(): String =  "$value"
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
 }
 
 class Null: Obj {
@@ -288,11 +339,19 @@ class Null: Obj {
 }
 
 class ReturnValue(val value: Obj): Obj {
-    override fun type(): ObjectType {
-        return RETURN_VALUE_OBJ
-    }
+    override fun type(): ObjectType = RETURN_VALUE_OBJ
     override fun inspect(): String = value.inspect()
+
+    override fun equals(other: Any?): Boolean {
+        return other is ReturnValue && other.value == this.value
+    }
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
+
 }
+
 
 class StringOBJ(val value: String): Obj, Hashable {
     override fun type(): ObjectType = STRING_OBJ
@@ -306,6 +365,14 @@ class StringOBJ(val value: String): Obj, Hashable {
     fun len(): Integer = Integer(value.length)
 
     fun reversed(): StringOBJ = StringOBJ(value.reversed())
+
+    override fun equals(other: Any?): Boolean {
+        return other is StringOBJ && other.value == this.value
+    }
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
 }
 
 class Error(private val message: String): Obj {
